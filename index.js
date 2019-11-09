@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const Dishes = require('./models/dishes');
 const url = 'mongodb://localhost:27017/conFusion';
-const connect = mongoose.connect(url);
+const connect = mongoose.connect(url, { useNewUrlParser: true });
 
 connect.then((db)=>{
    console.log('Connected correctly to serer');
@@ -13,12 +13,24 @@ connect.then((db)=>{
    })
    .then((dish)=>{
         console.log(dish);
-        return Dishes.find({}).exec()
+        return Dishes.findByIdAndUpdate(dish._id,{
+            $set:{description: 'updated test'}
+        },
+            {
+                new: true
+        }).exec()
    })
-   .then((dishes)=>{
-         console.log(dishes);
-
-         return Dishes.remove();
+   .then((dish)=>{
+         console.log(dish);
+         dish.comments.push({
+           rating: 5,
+           comment: 'i\'m getting a sick feeling',
+           author: 'Leonardo di carpio'
+         });
+        return dish.save();
+    })
+    .then(()=>{
+            return Dishes.remove();
     })
     .then(()=>{
        return mongoose.connection.close();
